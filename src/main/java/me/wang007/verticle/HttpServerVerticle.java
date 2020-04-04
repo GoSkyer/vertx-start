@@ -178,7 +178,7 @@ public class HttpServerVerticle extends AbstractVerticle implements VerticleConf
                                 mainRouter.mountSubRouter(mountPath, subRouter);
                             }
                         }
-                        DelegateRouter delegate = new DelegateRouter(subRouter != null ? subRouter : mainRouter);
+                        DelegateRouter delegate = new DelegateRouter(vertx,subRouter != null ? subRouter : mainRouter);
                         if (!StringUtils.isEmpty(prefix)) delegate.setPathPrefix(prefix).setMountPath(mountPath);
                         instance.init(delegate, vertx, this);
 

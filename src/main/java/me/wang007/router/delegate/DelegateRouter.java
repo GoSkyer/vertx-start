@@ -2,6 +2,7 @@ package me.wang007.router.delegate;
 
 
 import io.vertx.core.Handler;
+import io.vertx.core.Vertx;
 import io.vertx.core.http.HttpMethod;
 import io.vertx.core.http.HttpServerRequest;
 import io.vertx.ext.web.Router;
@@ -17,7 +18,7 @@ import java.util.List;
  * <p>
  * Created by wang007 on 2018/8/21.
  */
-public class DelegateRouter implements Router {
+public class DelegateRouter extends RouterImpl {
 
     private Router delegate;
 
@@ -33,7 +34,8 @@ public class DelegateRouter implements Router {
     private String mountPath;
 
 
-    public DelegateRouter(Router router) {
+    public DelegateRouter(Vertx vertx, Router router) {
+        super(vertx);
         this.delegate = router;
     }
 
