@@ -6,6 +6,7 @@ import io.vertx.ext.web.*;
 import io.vertx.ext.web.Route;
 
 import java.util.List;
+import java.util.Set;
 
 /**
  * 为Route设置pathPrefix
@@ -91,6 +92,11 @@ public class DelegateRoute implements io.vertx.ext.web.Route {
     }
 
     @Override
+    public Route subRouter(Router router) {
+        return delegate.subRouter(router);
+    }
+
+    @Override
     public Route blockingHandler(Handler<RoutingContext> requestHandler, boolean ordered) {
         return delegate.blockingHandler(requestHandler, ordered);
     }
@@ -123,6 +129,16 @@ public class DelegateRoute implements io.vertx.ext.web.Route {
     @Override
     public String getPath() {
         return delegate.getPath();
+    }
+
+    @Override
+    public boolean isRegexPath() {
+        return delegate.isRegexPath();
+    }
+
+    @Override
+    public Set<HttpMethod> methods() {
+        return delegate.methods();
     }
 
     @Override
