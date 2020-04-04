@@ -120,7 +120,7 @@ public class HttpServerVerticle extends AbstractVerticle implements VerticleConf
         Map<String, Router> sharedSubRouters = new HashMap<>(); //共享挂载子路由
         Map<String, List<Router>> notSharedSubRouters = new HashMap<>(); //不共享挂载子路由
 
-        Future.<Void>future(this::init)
+        Future.<Void>future(voidPromise -> init(voidPromise.future()))
                 .compose(v -> {
                     try {
                         before(mainRouter);
