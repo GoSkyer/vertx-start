@@ -120,7 +120,7 @@ public class HttpServerVerticle extends AbstractVerticle implements VerticleConf
         Map<String, Router> sharedSubRouters = new HashMap<>(); //共享挂载子路由
         Map<String, List<Router>> notSharedSubRouters = new HashMap<>(); //不共享挂载子路由
 
-        Future.<Void>future(voidPromise -> init(voidPromise.future()))
+        Future.<Void>future(this::init)
                 .compose(v -> {
                     try {
                         before(mainRouter);
@@ -206,7 +206,7 @@ public class HttpServerVerticle extends AbstractVerticle implements VerticleConf
                             request.response().setStatusCode(500).setStatusMessage("server failed").end();
                             return;
                         }
-                        if (success) mainRouter.handle(request);
+                        if (success) mainRouter.accept(request);
                     }).listen(info.port, info.address, ar -> {
                         if (ar.failed()) {
                             logger.error("http server listen failed.", ar.cause());

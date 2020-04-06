@@ -92,11 +92,6 @@ public class DelegateRoute implements io.vertx.ext.web.Route {
     }
 
     @Override
-    public Route subRouter(Router router) {
-        return delegate.subRouter(router);
-    }
-
-    @Override
     public Route blockingHandler(Handler<RoutingContext> requestHandler, boolean ordered) {
         return delegate.blockingHandler(requestHandler, ordered);
     }
@@ -131,15 +126,6 @@ public class DelegateRoute implements io.vertx.ext.web.Route {
         return delegate.getPath();
     }
 
-    @Override
-    public boolean isRegexPath() {
-        return delegate.isRegexPath();
-    }
-
-    @Override
-    public Set<HttpMethod> methods() {
-        return delegate.methods();
-    }
 
     @Override
     public Route setRegexGroupsNames(List<String> groups) {
