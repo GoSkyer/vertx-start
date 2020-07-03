@@ -6,12 +6,10 @@ import io.vertx.core.http.HttpServerRequest;
 import io.vertx.core.shareddata.LocalMap;
 import io.vertx.ext.web.Router;
 import io.vertx.ext.web.handler.BodyHandler;
-import io.vertx.ext.web.handler.CookieHandler;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
 import me.wang007.container.Component;
 import me.wang007.container.Container;
-import me.wang007.router.delegate.DelegateRouter;
 import me.wang007.utils.SharedReference;
 import me.wang007.annotation.Route;
 import me.wang007.router.LoadRouter;
@@ -27,18 +25,18 @@ import static me.wang007.constant.VertxBootConst.Key_Vertx_Start;
 
 /**
  * httpServer. 启动httpServer.
- *
+ * <p>
  * 覆盖 {@link #addressAndPort()} 方法提供部署的端口
- *
- *
+ * <p>
+ * <p>
  * 覆盖{@link #before(Router)} 做一些部署全局router操作
- *
+ * <p>
  * 覆盖{@link #beforeAccept(HttpServerRequest)} 做接受请求前的前置操作， 区别于{@link #before(Router)}方法
- *
+ * <p>
  * 覆盖{@link #options()} 提供部署的参数
- *
+ * <p>
  * 覆盖{@link #deployedHandler()} 做部署完成之后的操作
- *
+ * <p>
  * created by wang007 on 2018/9/6
  */
 public class HttpServerVerticle extends AbstractVerticle implements VerticleConfig {
@@ -82,18 +80,19 @@ public class HttpServerVerticle extends AbstractVerticle implements VerticleConf
      *
      * @param initFuture 在init方法中，执行{@link Future}完成的相关方法
      */
-    protected void init(Future<Void> initFuture) {
+    protected void init(Promise<Object> initFuture) {
         initFuture.complete();
     }
 
     /**
      * 启动httpServer的操作
      * <p>
-     * 在这里，可以做全局的router设置。 例如， {@link BodyHandler}, {@link CookieHandler} 等一些全局性的过滤
+     * 在这里，可以做全局的router设置。 例如， {@link BodyHandler},  等一些全局性的过滤
      *
      * @param mainRouter 主路由器
      */
-    protected void before(Router mainRouter) {}
+    protected void before(Router mainRouter) {
+    }
 
 
     /**
@@ -110,17 +109,17 @@ public class HttpServerVerticle extends AbstractVerticle implements VerticleConf
     }
 
     @Override
-    public final void start(Future<Void> startFuture) throws Exception {
+    public final void start(Promise<Void> startPromise) {
         long start = System.currentTimeMillis();
 
-        Future<Void> initF = Future.future();
+        Promise<Object> initF = Promise.promise();
         init(initF);
 
         Router mainRouter = Router.router(vertx);
         Map<String, Router> sharedSubRouters = new HashMap<>(); //共享挂载子路由
         Map<String, List<Router>> notSharedSubRouters = new HashMap<>(); //不共享挂载子路由
 
-        Future.<Void>future(this::init)
+        Promise.promise().future()
                 .compose(v -> {
                     try {
                         before(mainRouter);
@@ -158,34 +157,28 @@ public class HttpServerVerticle extends AbstractVerticle implements VerticleConf
                         return Integer.compare(order1, order2);
                     }).forEach(tuple -> {
                         Component component = tuple.component;
-                        LoadRouter instance = tuple.instance;
+                        LoadRouter loadRouter = tuple.instance;
                         Route route = component.getAnnotation(Route.class);
-                        String prefix = RouteUtils.checkPath(route.value());
                         String mountPath = RouteUtils.checkPath(route.mountPath());
-                        boolean shared = route.sharedMount();
 
                         Router subRouter = null;
                         if (!StringUtils.isEmpty(mountPath)) {   //需要挂载
-                            if (shared) {
-                                subRouter = sharedSubRouters.computeIfAbsent(mountPath, k -> {
-                                    Router subRouter0 = Router.router(vertx);
-                                    mainRouter.mountSubRouter(mountPath, subRouter0);
-                                    return subRouter0;
-                                });
-                            } else {
-                                subRouter = Router.router(vertx);
-                                notSharedSubRouters.getOrDefault(mountPath, new ArrayList<>()).add(subRouter);
-                                mainRouter.mountSubRouter(mountPath, subRouter);
-                            }
-                        }
-                        DelegateRouter delegate = new DelegateRouter(vertx,subRouter != null ? subRouter : mainRouter);
-                        if (!StringUtils.isEmpty(prefix)) delegate.setPathPrefix(prefix).setMountPath(mountPath);
-                        instance.init(delegate, vertx, this);
+                            subRouter = sharedSubRouters.computeIfAbsent(mountPath, k -> {
+                                Router subRouter0 = Router.router(vertx);
+                                mainRouter.mountSubRouter(mountPath, subRouter0);
+                                return subRouter0;
+                            });
 
-                        Future<Void> future = Future.future();
+                        }
+                        Router router = subRouter != null ? subRouter : mainRouter;
+                        loadRouter.init(router, vertx, this);
+
+
+                        Promise<Void> promise = Promise.promise();
+                        Future<Void> future = promise.future();
                         futList.add(future);
 
-                        instance.start(future);
+                        loadRouter.start(future);
                     });
                     return CompositeFuture.join(futList);
                 })
@@ -195,8 +188,8 @@ public class HttpServerVerticle extends AbstractVerticle implements VerticleConf
                         return Future.failedFuture(new VertxException("LoadRouter lifeCycle hooks failed", allAr.cause()));
                     }
                     AddressAndPort info = addressAndPort();
-
-                    Future<Void> listenF = Future.future();
+                    Promise<Void> listenF = Promise.promise();
+//                    Future<Void> listenF = promise.future();
                     server = vertx.createHttpServer().requestHandler(request -> {
                         boolean success;
                         try {
@@ -206,7 +199,7 @@ public class HttpServerVerticle extends AbstractVerticle implements VerticleConf
                             request.response().setStatusCode(500).setStatusMessage("server failed").end();
                             return;
                         }
-                        if (success) mainRouter.accept(request);
+                        if (success) mainRouter.handle(request);
                     }).listen(info.port, info.address, ar -> {
                         if (ar.failed()) {
                             logger.error("http server listen failed.", ar.cause());
@@ -222,11 +215,11 @@ public class HttpServerVerticle extends AbstractVerticle implements VerticleConf
                         }
                         listenF.complete();
                     });
-                    return listenF;
+                    return listenF.future();
                 })
-                .setHandler(ar -> {
-                    if (ar.succeeded()) startFuture.complete();
-                    else startFuture.fail(ar.cause());
+                .onComplete(ar -> {
+                    if (ar.succeeded()) startPromise.complete();
+                    else startPromise.fail(ar.cause());
                 });
 
 

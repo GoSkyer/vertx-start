@@ -43,14 +43,14 @@ import java.lang.annotation.Target;
 @Target(ElementType.TYPE)
 public @interface Route {
 
-    /**
-     * 请求路径的前缀
-     * 默认是 "", 即没有前缀， 直接匹配{@link io.vertx.ext.web.Route#path(String)}
-     * 如果设置{@code value()} 请求路径： value() + {@link io.vertx.ext.web.Route#getPath()}
-     *
-     * @return 请求路径的前缀
-     */
-    String value() default "";
+//    /**
+//     * 请求路径的前缀
+//     * 默认是 "", 即没有前缀， 直接匹配{@link io.vertx.ext.web.Route#path(String)}
+//     * 如果设置{@code value()} 请求路径： value() + {@link io.vertx.ext.web.Route#getPath()}
+//     *
+//     * @return 请求路径的前缀
+//     */
+//    String value() default "";
 
     /**
      * 即把{@link LoadRouter#start(Future)}中的所有{@link io.vertx.ext.web.Route}挂载到{@code #mountPath()}

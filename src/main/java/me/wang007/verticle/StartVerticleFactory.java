@@ -1,8 +1,11 @@
 package me.wang007.verticle;
 
+import io.vertx.core.Promise;
 import io.vertx.core.Verticle;
 import io.vertx.core.spi.VerticleFactory;
 import me.wang007.container.Container;
+
+import java.util.concurrent.Callable;
 
 
 /**
@@ -17,10 +20,7 @@ public class StartVerticleFactory implements VerticleFactory {
      */
     public static final String Start_Prefix = "start";
 
-    @Override
-    public boolean blockingCreate() {
-        return true;
-    }
+
 
     @Override
     public String prefix() {
@@ -28,7 +28,7 @@ public class StartVerticleFactory implements VerticleFactory {
     }
 
     @Override
-    public Verticle createVerticle(String verticleName, ClassLoader classLoader) throws Exception {
+    public void createVerticle(String verticleName, ClassLoader classLoader, Promise<Callable<Verticle>> promise)  {
         //must be the same type classLoader
         //ComponentParseImpl #loadClass method
         ClassLoader loader = Container.Default_ClassLoader;
@@ -36,8 +36,13 @@ public class StartVerticleFactory implements VerticleFactory {
         if(verticleName.endsWith(".java")) {
             throw new IllegalArgumentException("verticleName not support endWith java");
         }
-        Class<?> clz = loader.loadClass(verticleName);
-        Object v = clz.newInstance();
-        return (Verticle) v;
+
+        try {
+            Class<?> clz = loader.loadClass(verticleName);
+            Object v = clz.newInstance();
+            promise.complete(() -> (Verticle) v);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 }

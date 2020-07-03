@@ -6,10 +6,8 @@ import me.wang007.constant.VertxBootConst;
 import me.wang007.container.Container;
 import me.wang007.container.DefaultContainer;
 import me.wang007.exception.InitialException;
-import me.wang007.json.JsonArraySend;
-import me.wang007.json.JsonSend;
-import me.wang007.json.codec.JsonArraySendMessageCodec;
-import me.wang007.json.codec.JsonSendMessageCodec;
+//import me.wang007.json.JsonSend;
+//import me.wang007.json.codec.JsonSendMessageCodec;
 import me.wang007.utils.SharedReference;
 import me.wang007.utils.StringUtils;
 import me.wang007.verticle.StartVerticleFactory;
@@ -53,8 +51,8 @@ public class SimpleVertxBoot implements VertxBootWithHook {
 
         //设置vert.x相关
         vertx.registerVerticleFactory(new StartVerticleFactory());
-        vertx.eventBus().registerDefaultCodec(JsonArraySend.class, new JsonArraySendMessageCodec());
-        vertx.eventBus().registerDefaultCodec(JsonSend.class, new JsonSendMessageCodec());
+//        vertx.eventBus().registerDefaultCodec(JsonArraySend.class, new JsonArraySendMessageCodec());
+//        vertx.eventBus().registerDefaultCodec(JsonSend.class, new JsonSendMessageCodec());
 
         //将container, vertxBoot设置到SharedData中
         LocalMap<String, SharedReference<?>> startMap = vertx.sharedData().getLocalMap(VertxBootConst.Key_Vertx_Start);
