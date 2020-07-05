@@ -180,7 +180,16 @@
             <distribution>repo</distribution>
         </license>
     </licenses>
-
+    <repositories>
+        <repository>
+            <id>oss-sonatype</id>
+            <name>oss-sonatype</name>
+            <url>https://oss.sonatype.org/content/repositories/snapshots/</url>
+            <snapshots>
+                <enabled>true</enabled>
+            </snapshots>
+        </repository>
+    </repositories>
     <distributionManagement>
         <snapshotRepository>
             <id>oss</id><!-- settings.xml中server节点的id-->

@@ -6,7 +6,6 @@ import io.vertx.core.logging.LoggerFactory;
 import me.wang007.annotation.Deploy;
 import me.wang007.container.Component;
 import me.wang007.container.Container;
-import me.wang007.container.LoadContainer;
 import me.wang007.exception.ErrorUsedAnnotationException;
 import me.wang007.annotation.Route;
 import me.wang007.exception.VertxStartException;
@@ -27,7 +26,7 @@ public class VertxComponentLoader {
     private static final Logger logger = LoggerFactory.getLogger(VertxComponentLoader.class);
 
 
-    public VertxComponentLoader(LoadContainer container) {
+    public VertxComponentLoader(Container container) {
         if (container.started()) throw new IllegalStateException("Load container must be not started");
         container.registerLoadBy(Deploy.class).registerLoadBy(Route.class);
     }

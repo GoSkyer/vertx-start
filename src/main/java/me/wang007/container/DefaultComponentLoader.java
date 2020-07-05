@@ -15,12 +15,7 @@ import java.util.*;
  */
 public class DefaultComponentLoader implements ComponentLoader {
 
-    @Override
-    public Component createComponent(Class<?> clz) {
-        return createComponent(clz, new HashMap<>());
-    }
-
-    protected Component createComponent(Class<?> clz, Map<Class<?>, Component> map) {
+    private Component createComponent(Class<?> clz, Map<Class<?>, Component> map) {
         Component.Builder builder = Component.Builder.builder();
         builder.clazz(clz)
                 .annotations(Arrays.asList(clz.getAnnotations()))

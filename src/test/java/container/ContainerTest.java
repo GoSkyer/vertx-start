@@ -41,16 +41,16 @@ public class ContainerTest {
         Assert.assertTrue(component != null);
     }
 
-    @Test
-    public void containerTest2() {
-
-        DefaultContainer container = new DefaultContainer();
-        container.registerLoadBy(Deploy.class).registerLoadBy(Route.class).registerLoadBy(Properties.class);
-        container.start("example");
-
-        List<Component> components = container.getComponentsFrom(Verticle.class);
-        Assert.assertTrue(components.size() != 0);
-
-    }
+//    @Test
+//    public void containerTest2() {
+//
+//        DefaultContainer container = new DefaultContainer();
+//        container.registerLoadBy(Deploy.class).registerLoadBy(Route.class).registerLoadBy(Properties.class);
+//        container.start("example");
+//
+//        List<Component> components = container.getComponentsFrom(Verticle.class);
+//        Assert.assertTrue(components.size() != 0);
+//
+//    }
 
 }

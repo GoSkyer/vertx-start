@@ -11,15 +11,6 @@ import java.util.*;
 public interface ComponentLoader {
 
     /**
-     * 创建组件
-     *
-     * @param clz 组件类型
-     *
-     * @return {@link Component}
-     */
-    Component createComponent(Class<?> clz);
-
-    /**
      * 从指定的class集合， 加载指定的组件。
      *
      * @param classes       class集合。

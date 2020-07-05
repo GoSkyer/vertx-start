@@ -2,7 +2,7 @@ package me.wang007.boot;
 
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
-import me.wang007.container.LoadContainer;
+import me.wang007.container.Container;
 import me.wang007.constant.VertxBootConst;
 import me.wang007.container.Component;
 import me.wang007.container.PropertyField;
@@ -27,9 +27,9 @@ public class PropertiesLoader {
 
     private final ConcurrentHashMap<String, String> properties;
 
-    private final LoadContainer container;
+    private final Container container;
 
-    public PropertiesLoader(LoadContainer container) {
+    public PropertiesLoader(Container container) {
         this.properties = new ConcurrentHashMap<>();
         this.container = container;
         if (container.started()) throw new IllegalStateException("Load container must be not started");

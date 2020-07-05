@@ -27,7 +27,8 @@ import java.lang.annotation.Target;
 @Target(ElementType.FIELD)
 public @interface Value {
 
-    /**
+    /** set -x PATH /Applications/IntelliJ\ IDEA.app/Contents/plugins/maven/lib/maven3/bin $PATH
+
      * @return 注入的属性的属性名
      */
     String value() default "";

@@ -17,12 +17,12 @@ import java.util.*;
 public class ComponentLoaderTest {
 
 
-    @Test
-    public void createTest() {
-        DefaultComponentLoader loader = new DefaultComponentLoader();
-        Component component = loader.createComponent(ArrayList.class);
-        System.out.println(component);
-    }
+//    @Test
+//    public void createTest() {
+//        DefaultComponentLoader loader = new DefaultComponentLoader();
+//        Component component = loader.createComponent(ArrayList.class);
+//        System.out.println(component);
+//    }
 
 
     @Test
