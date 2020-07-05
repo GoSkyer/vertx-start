@@ -15,6 +15,36 @@ import java.util.*;
  */
 public class DefaultComponentLoader implements ComponentLoader {
 
+    @Override
+    public Map<Class<?>, Component> loadComponents(Collection<Class<?>> classes,
+                                                   List<Class<? extends Annotation>> load,
+                                                   Set<Class<?>> targetFrom) {
+        Map<Class<?>, Component> map = new HashMap<>();
+        classes.forEach(clz -> {
+            if (map.containsKey(clz)) return;
+            Annotation[] as = clz.getAnnotations();
+            for (Annotation a : as) {
+                for (Class<? extends Annotation> ac : load) {
+                    if(ac.isAssignableFrom(a.getClass())) {
+                        map.put(clz, createComponent(clz, map));
+                        return;
+                    }
+                }
+            }
+
+            List<Class<?>> supers = findSupers(clz);
+            for (Class<?> parent : supers) {
+                if (targetFrom.contains(parent)) {
+                    map.put(clz, createComponent(clz, map));
+                    return;
+                }
+            }
+        });
+        return map;
+    }
+
+
+
     private Component createComponent(Class<?> clz, Map<Class<?>, Component> map) {
         Component.Builder builder = Component.Builder.builder();
         builder.clazz(clz)
@@ -63,43 +93,6 @@ public class DefaultComponentLoader implements ComponentLoader {
             pfs.add(builder.build());
         }
         return pfs;
-    }
-
-
-    @Override
-    public Map<Class<?>, Component> loadComponents(Collection<Class<?>> classes,
-                                                   List<Class<? extends Annotation>> load,
-                                                   List<Class<?>> targetClz,
-                                                   Set<Class<?>> targetFrom) {
-        Map<Class<?>, Component> map = new HashMap<>();
-        classes.forEach(clz -> {
-            if (map.containsKey(clz)) return;
-            Annotation[] as = clz.getAnnotations();
-            for (Annotation a : as) {
-                for (Class<? extends Annotation> ac : load) {
-                    if(ac.isAssignableFrom(a.getClass())) {
-                        map.put(clz, createComponent(clz, map));
-                        return;
-                    }
-                }
-            }
-
-            for (Class target : targetClz) {
-                if (clz.equals(target)) {
-                    map.put(clz, createComponent(clz, map));
-                    return;
-                }
-            }
-
-            List<Class<?>> supers = findSupers(clz);
-            for (Class<?> parent : supers) {
-                if (targetFrom.contains(parent)) {
-                    map.put(clz, createComponent(clz, map));
-                    return;
-                }
-            }
-        });
-        return map;
     }
 
 

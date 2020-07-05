@@ -27,11 +27,6 @@ public class DefaultContainer implements Container {
     private final List<Class<? extends Annotation>> loadByAnnotation = new ArrayList<>();
 
     /**
-     * 目标类
-     */
-    private final List<Class<?>> loadByTargetClz = new ArrayList<>();
-
-    /**
      * 目标类的子类
      */
     private final List<Class<?>> loadByFrom = new ArrayList<>();
@@ -44,14 +39,6 @@ public class DefaultContainer implements Container {
 
     protected final List<Class<? extends Annotation>> getLoadByAnnotation() {
         return Collections.unmodifiableList(loadByAnnotation);
-    }
-
-    protected final List<Class> getLoadByTargetClz() {
-        return Collections.unmodifiableList(loadByTargetClz);
-    }
-
-    protected final List<Class> getLoadByFrom() {
-        return Collections.unmodifiableList(loadByFrom);
     }
 
     protected final Map<Class<?>, Component> componentMap() {
@@ -93,7 +80,7 @@ public class DefaultContainer implements Container {
         Set<Class<?>> loadFromSet = new HashSet<>(loadByFrom.size());
         loadFromSet.addAll(loadByFrom);
         Map<Class<?>, Component> map =
-                componentLoader.loadComponents(classes, loadByAnnotation, loadByTargetClz, loadFromSet);
+                componentLoader.loadComponents(classes, loadByAnnotation, loadFromSet);
         map.forEach(componentMap::put);
     }
 

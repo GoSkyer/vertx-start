@@ -25,20 +25,20 @@ public class ComponentLoaderTest {
 //    }
 
 
-    @Test
-    public void loadTest() {
-        DefaultComponentLoader loader = new DefaultComponentLoader();
-
-        HashSet<Class<?>> set = new HashSet<>();
-        set.add(DemoVerticle.class);
-
-        List<Class<? extends Annotation>> ans = new ArrayList<>();
-        ans.add(Deploy.class);
-
-        Map<Class<?>, Component> map = loader.loadComponents(set, ans);
-        Component component = map.get(DemoVerticle.class);
-        Assert.assertEquals(DemoVerticle.class, component.getClazz());
-    }
+//    @Test
+//    public void loadTest() {
+//        DefaultComponentLoader loader = new DefaultComponentLoader();
+//
+//        HashSet<Class<?>> set = new HashSet<>();
+//        set.add(DemoVerticle.class);
+//
+//        List<Class<? extends Annotation>> ans = new ArrayList<>();
+//        ans.add(Deploy.class);
+//
+//        Map<Class<?>, Component> map = loader.loadComponents(set, ans);
+//        Component component = map.get(DemoVerticle.class);
+//        Assert.assertEquals(DemoVerticle.class, component.getClazz());
+//    }
 
 
     @Test
@@ -50,26 +50,26 @@ public class ComponentLoaderTest {
 
         List<Class<?>> target = new ArrayList<>();
         target.add(DemoVerticle.class);
-        Map<Class<?>, Component> map = loader.loadComponents(set, Collections.emptyList(), target, Collections.emptySet());
+        Map<Class<?>, Component> map = loader.loadComponents(set, Collections.emptyList(), Collections.emptySet());
 
         Component component = map.get(DemoVerticle.class);
         Assert.assertEquals(DemoVerticle.class, component.getClazz());
     }
 
 
-    @Test
-    public void loadTest2() {
-
-        DefaultComponentLoader loader = new DefaultComponentLoader();
-
-        HashSet<Class<?>> set = new HashSet<>();
-        set.add(DemoVerticle.class);
-
-        Map<Class<?>, Component> map = loader.loadComponents(set, Collections.singleton(Verticle.class));
-        Component component = map.get(DemoVerticle.class);
-        Assert.assertEquals(DemoVerticle.class, component.getClazz());
-    }
-
+//    @Test
+//    public void loadTest2() {
+//
+//        DefaultComponentLoader loader = new DefaultComponentLoader();
+//
+//        HashSet<Class<?>> set = new HashSet<>();
+//        set.add(DemoVerticle.class);
+//
+//        Map<Class<?>, Component> map = loader.loadComponents(set, Collections.singleton(Verticle.class));
+//        Component component = map.get(DemoVerticle.class);
+//        Assert.assertEquals(DemoVerticle.class, component.getClazz());
+//    }
+//
 
 
 
