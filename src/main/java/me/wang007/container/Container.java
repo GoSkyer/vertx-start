@@ -42,24 +42,6 @@ public interface Container {
 
 
     /**
-     * 指定加载的类 是否被目标注解 注解上。
-     *
-     * note: 如果已加载过组件，则不做加载操作。
-     *
-     * @param loadBy 目标注解
-     * @return this
-     */
-    Container registerLoadBy(Class<? extends Annotation> loadBy);
-
-    /**
-     * 启动container，加载组件
-     *
-     * @param basePaths 组件的基路径
-     * @return this
-     */
-    Container start(String... basePaths);
-
-    /**
      * 容器是否完成启动
      *
      * @return true：未启动， false: 已启动

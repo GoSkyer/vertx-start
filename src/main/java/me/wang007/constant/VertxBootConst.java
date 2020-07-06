@@ -46,8 +46,6 @@ public interface VertxBootConst {
      */
     String Key_Vertx_Start = "_vertx-start_";
 
-
-    String Key_Container = "_container_";
     String Key_Vertx_Boot = "_boot_";
 
 

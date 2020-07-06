@@ -6,6 +6,7 @@ import io.vertx.core.logging.LoggerFactory;
 import me.wang007.annotation.Deploy;
 import me.wang007.container.Component;
 import me.wang007.container.Container;
+import me.wang007.container.DefaultContainer;
 import me.wang007.exception.ErrorUsedAnnotationException;
 import me.wang007.annotation.Route;
 import me.wang007.exception.VertxStartException;
@@ -25,20 +26,13 @@ public class VertxComponentLoader {
 
     private static final Logger logger = LoggerFactory.getLogger(VertxComponentLoader.class);
 
-
-    public VertxComponentLoader(Container container) {
-        if (container.started()) throw new IllegalStateException("Load container must be not started");
-        container.registerLoadBy(Deploy.class).registerLoadBy(Route.class);
-    }
-
     /**
      * 从容器中获取被{@link Deploy}注解的{@link Verticle}组件，并执行部署操作。
      *
-     * @param container 组件容器
      * @param vertx     vertx实例
      */
-    public void executeDeploy(Container container, Vertx vertx) {
-        List<Component> components = container.getComponentsByAnnotation(Deploy.class);
+    public void executeDeploy(Vertx vertx) {
+        List<Component> components = DefaultContainer.get().getComponentsByAnnotation(Deploy.class);
         components.stream()
                 .filter(c -> {
                     Deploy deploy = c.getAnnotation(Deploy.class);

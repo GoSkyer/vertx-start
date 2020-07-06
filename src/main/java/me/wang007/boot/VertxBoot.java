@@ -26,12 +26,6 @@ public interface VertxBoot {
     }
 
     /**
-     * 获取一个ioc容器
-     * @return ioc容器
-     */
-    Container getContainer();
-
-    /**
      * 获取配置文件中加载好的属性
      *
      * @param key 配置文件的key

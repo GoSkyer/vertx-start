@@ -17,8 +17,7 @@ public class DefaultComponentLoader implements ComponentLoader {
 
     @Override
     public Map<Class<?>, Component> loadComponents(Collection<Class<?>> classes,
-                                                   List<Class<? extends Annotation>> load,
-                                                   Set<Class<?>> targetFrom) {
+                                                   List<Class<? extends Annotation>> load) {
         Map<Class<?>, Component> map = new HashMap<>();
         classes.forEach(clz -> {
             if (map.containsKey(clz)) return;
@@ -29,14 +28,6 @@ public class DefaultComponentLoader implements ComponentLoader {
                         map.put(clz, createComponent(clz, map));
                         return;
                     }
-                }
-            }
-
-            List<Class<?>> supers = findSupers(clz);
-            for (Class<?> parent : supers) {
-                if (targetFrom.contains(parent)) {
-                    map.put(clz, createComponent(clz, map));
-                    return;
                 }
             }
         });

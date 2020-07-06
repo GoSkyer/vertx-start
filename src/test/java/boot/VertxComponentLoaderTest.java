@@ -15,13 +15,13 @@ public class VertxComponentLoaderTest {
     @Test
     public void executeLoadTest() {
 
-        DefaultContainer container = new DefaultContainer();
-        VertxComponentLoader loader = new VertxComponentLoader(container);
-        container.start("me.wang007");
+//        DefaultContainer container = new DefaultContainer();
+        VertxComponentLoader loader = new VertxComponentLoader();
+        DefaultContainer.init("me.wang007");
 
         Vertx vertx = Vertx.vertx();
         vertx.registerVerticleFactory(new StartVerticleFactory());
-        loader.executeDeploy(container, vertx);
+        loader.executeDeploy(vertx);
     }
 
 }

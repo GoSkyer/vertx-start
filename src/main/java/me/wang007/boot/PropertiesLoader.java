@@ -5,6 +5,7 @@ import io.vertx.core.logging.LoggerFactory;
 import me.wang007.container.Container;
 import me.wang007.constant.VertxBootConst;
 import me.wang007.container.Component;
+import me.wang007.container.DefaultContainer;
 import me.wang007.container.PropertyField;
 import me.wang007.exception.InjectException;
 import me.wang007.exception.VertxStartException;
@@ -27,13 +28,8 @@ public class PropertiesLoader {
 
     private final ConcurrentHashMap<String, String> properties;
 
-    private final Container container;
-
-    public PropertiesLoader(Container container) {
+    public PropertiesLoader() {
         this.properties = new ConcurrentHashMap<>();
-        this.container = container;
-        if (container.started()) throw new IllegalStateException("Load container must be not started");
-        container.registerLoadBy(me.wang007.annotation.Properties.class);
     }
 
 
@@ -123,7 +119,7 @@ public class PropertiesLoader {
      */
     public <E> E loadFor(Class<E> propertiesClz) {
         Objects.requireNonNull(propertiesClz, "require");
-        Component component = container.getComponent(propertiesClz);
+        Component component = DefaultContainer.get().getComponent(propertiesClz);
         if(component == null) {
             throw new NullPointerException("not found component, require " + propertiesClz.getName() + " exist @Properties");
         }

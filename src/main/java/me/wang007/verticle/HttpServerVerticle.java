@@ -10,6 +10,7 @@ import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
 import me.wang007.container.Component;
 import me.wang007.container.Container;
+import me.wang007.container.DefaultContainer;
 import me.wang007.utils.SharedReference;
 import me.wang007.annotation.Route;
 import me.wang007.router.LoadRouter;
@@ -20,7 +21,6 @@ import me.wang007.utils.StringUtils;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
 
-import static me.wang007.constant.VertxBootConst.Key_Container;
 import static me.wang007.constant.VertxBootConst.Key_Vertx_Start;
 
 /**
@@ -131,11 +131,8 @@ public class HttpServerVerticle extends AbstractVerticle implements VerticleConf
                 })
                 .compose(v -> {
                     LocalMap<String, SharedReference<?>> map = vertx.sharedData().getLocalMap(Key_Vertx_Start);
-                    @SuppressWarnings("unchecked")
-                    SharedReference<Container> sharedRef = (SharedReference<Container>) map.get(Key_Container);
-                    Container container = sharedRef.ref;
 
-                    List<Component> components = container.getComponentsByAnnotation(Route.class);
+                    List<Component> components = DefaultContainer.get().getComponentsByAnnotation(Route.class);
 
                     List<LoadRouterTuple> tuples = new ArrayList<>(components.size());
                     for (Component c : components) {

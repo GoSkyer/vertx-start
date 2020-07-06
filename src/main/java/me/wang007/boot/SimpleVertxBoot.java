@@ -27,8 +27,6 @@ public class SimpleVertxBoot implements VertxBootWithHook {
      */
     private volatile boolean start = false;
 
-    private final DefaultContainer container;   //组件容器
-
     private final PropertiesLoader prLoader ;   //属性加载器
 
     //hooks
@@ -40,8 +38,7 @@ public class SimpleVertxBoot implements VertxBootWithHook {
 
     public SimpleVertxBoot(Vertx vertx) {
         this.vertx = vertx;
-        this.container = new DefaultContainer();
-        this.prLoader = new PropertiesLoader(container);
+        this.prLoader = new PropertiesLoader();
     }
 
     /**
@@ -56,7 +53,6 @@ public class SimpleVertxBoot implements VertxBootWithHook {
 
         //将container, vertxBoot设置到SharedData中
         LocalMap<String, SharedReference<?>> startMap = vertx.sharedData().getLocalMap(VertxBootConst.Key_Vertx_Start);
-        startMap.put(VertxBootConst.Key_Container, new SharedReference<>(container));
         startMap.put(VertxBootConst.Key_Vertx_Boot, new SharedReference<>(this));
 
 
@@ -69,16 +65,16 @@ public class SimpleVertxBoot implements VertxBootWithHook {
         }
 
         //用于加载vert.x相关的组件
-        VertxComponentLoader vcl = new VertxComponentLoader(container);
+        VertxComponentLoader vcl = new VertxComponentLoader();
 
         if(beforeLoadComponentsHook != null) beforeLoadComponentsHook.accept(this); //执行hook
         String[] basePathArr = new String[options.getBasePath().size()];
         options.getBasePath().toArray(basePathArr);
-        container.start(basePathArr);     //启动容器，加载Component
+        DefaultContainer.init(basePathArr);     //启动容器，加载Component
         if(afterLoadComponentsHook != null) afterLoadComponentsHook.accept(this);  //执行hook
 
         if(beforeDeployedHook != null) beforeDeployedHook.accept(this); //执行hook
-        vcl.executeDeploy(container, vertx);  //加载vert.x相关的组件
+        vcl.executeDeploy(vertx);  //加载vert.x相关的组件
         if(afterDeployedHook != null) afterDeployedHook.accept(this);    //执行hook
 
         if(afterStartHook != null) afterStartHook.run();
@@ -116,12 +112,6 @@ public class SimpleVertxBoot implements VertxBootWithHook {
     public synchronized SimpleVertxBoot afterStartHook(Runnable hook) {
         this.afterStartHook = hook;
         return this;
-    }
-
-
-    @Override
-    public Container getContainer() {
-        return container;
     }
 
     @Override

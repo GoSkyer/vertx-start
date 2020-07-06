@@ -50,7 +50,7 @@ public class ComponentLoaderTest {
 
         List<Class<?>> target = new ArrayList<>();
         target.add(DemoVerticle.class);
-        Map<Class<?>, Component> map = loader.loadComponents(set, Collections.emptyList(), Collections.emptySet());
+        Map<Class<?>, Component> map = loader.loadComponents(set, Collections.emptyList());
 
         Component component = map.get(DemoVerticle.class);
         Assert.assertEquals(DemoVerticle.class, component.getClazz());

@@ -15,10 +15,9 @@ public interface ComponentLoader {
      *
      * @param classes       class集合。
      * @param load          指定注解    即被加载的组件含有该注解
-     * @param targetFrom    指定类型来源 即加载的class必须是 targetFrom的子类
      * @return 指定加载的组件
      */
-    Map<Class<?>, Component> loadComponents(Collection<Class<?>> classes, List<Class<? extends Annotation>> load, Set<Class<?>> targetFrom);
+    Map<Class<?>, Component> loadComponents(Collection<Class<?>> classes, List<Class<? extends Annotation>> load);
 
 //    /**
 //     * 从指定的class集合， 加载指定的组件。
