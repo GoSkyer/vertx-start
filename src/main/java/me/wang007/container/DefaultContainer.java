@@ -182,7 +182,7 @@ public class DefaultContainer implements Container {
                     Class<?> loadClass = loadClass(fileName);
                     if (loadClass != null) {
                         boolean isExist = !classes.add(loadClass);
-                        if (isExist) logger.error("class重复存在, {}", loadClass);
+                        if (isExist) logger.error("class重复存在 in class, {}", loadClass);
                     }
                 }
 
@@ -229,7 +229,7 @@ public class DefaultContainer implements Container {
                         Class<?> loadClass = loadClass(filePath.replace('/', '.'));
                         if (loadClass != null) {
                             boolean isExist = !classes.add(loadClass);
-                            if (isExist) logger.error("class重复存在, {}", loadClass);
+                            if (isExist) logger.error("class重复存在 in jar, {}", loadClass);
                         }
                     }
                 }
@@ -246,6 +246,7 @@ public class DefaultContainer implements Container {
      * @return
      */
     private Class<?> loadClass(String dotPath) {
+        logger.info("loadClass -> {}", dotPath);
         try {
             return Default_ClassLoader.loadClass(dotPath);
         } catch (ClassNotFoundException e) {

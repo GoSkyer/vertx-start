@@ -1,4 +1,4 @@
-package me.wang007.router.delegate;
+package me.wang007.router;
 
 import me.wang007.utils.StringUtils;
 
