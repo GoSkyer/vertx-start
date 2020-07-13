@@ -149,6 +149,7 @@ public class DefaultContainer implements Container {
 
             if ("file".equals(fileType)) {
                 String filePath = dirOrFile.getFile();
+                logger.info("nextElement={}",filePath);
                 File file = new File(filePath);
 
                 if (!file.exists()) {
@@ -163,6 +164,7 @@ public class DefaultContainer implements Container {
                     for (File f : files) {
                         String fileName = f.getName();
                         if (f.isDirectory()) {
+                            logger.info("dirOrFiles={}", dirOrFiles);
                             getClassesByPath(classes, dotPath + '.' + fileName);
                         } else if (f.getName().endsWith(".class")) {
                             //去掉 .class 结尾
