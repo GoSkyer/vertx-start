@@ -131,6 +131,7 @@ public class DefaultContainer implements Container {
      * @param dotPath 以 "." 分割包路径的path
      */
     private void getClassesByPath(Set<Class<?>> classes, String dotPath) {
+        logger.info("dotpath={}", dotPath);
         Enumeration<URL> dirOrFiles = null;
         // 以 “/”分割的path
         String slashPath = dotPath.replace(".", "/");
@@ -161,8 +162,9 @@ public class DefaultContainer implements Container {
 
                     for (File f : files) {
                         String fileName = f.getName();
-                        if (f.isDirectory()) getClassesByPath(classes, dotPath + '.' + fileName);
-                        else if (f.getName().endsWith(".class")) {
+                        if (f.isDirectory()) {
+                            getClassesByPath(classes, dotPath + '.' + fileName);
+                        } else if (f.getName().endsWith(".class")) {
                             //去掉 .class 结尾
                             fileName = fileName.substring(0, fileName.length() - 6);
                             Class<?> loadClass = loadClass(dotPath + '.' + fileName);
