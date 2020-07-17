@@ -4,6 +4,7 @@ package me.wang007.container;
 import java.io.File;
 import java.io.IOException;
 import java.lang.annotation.Annotation;
+import java.lang.annotation.ElementType;
 import java.net.JarURLConnection;
 import java.net.URL;
 import java.util.*;
@@ -11,6 +12,8 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
 
+import dorkbox.annotation.AnnotationDefaults;
+import dorkbox.annotation.AnnotationDetector;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
 import me.wang007.annotation.Deploy;
@@ -54,7 +57,6 @@ public class DefaultContainer implements Container {
         if (singleton == null) {
             synchronized (DefaultContainer.class) {
                 if (singleton == null) {
-                    //通过Builder默认的配置来创建一个Picasso
                     singleton = new DefaultContainer(basePaths);
                 }
             }
@@ -114,133 +116,19 @@ public class DefaultContainer implements Container {
             logger.warn("not found base path...");
         }
 
-        Set<Class<?>> classes = new LinkedHashSet<>();
-        //根据basePaths解析出class
-        for (String path : paths) getClassesByPath(classes, path);
+        //获取class
+        List classModules = null;
+        try {
+            classModules = AnnotationDetector.scanClassPath(basePaths)
+                    .forAnnotations(loadByAnnotation.toArray(new Class[loadByAnnotation.size()]))  // one or more annotations
+                    .collect(AnnotationDefaults.getType);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
 
         Map<Class<?>, Component> map =
-                componentLoader.loadComponents(classes, loadByAnnotation);
+                componentLoader.loadComponents(classModules, loadByAnnotation);
         map.forEach(componentMap::put);
-    }
-
-
-    /**
-     * 递归加载class
-     *
-     * @param classes 装载class的容器
-     * @param dotPath 以 "." 分割包路径的path
-     */
-    private void getClassesByPath(Set<Class<?>> classes, String dotPath) {
-        logger.info("dotpath={}", dotPath);
-        Enumeration<URL> dirOrFiles = null;
-        // 以 “/”分割的path
-        String slashPath = dotPath.replace(".", "/");
-        try {
-            dirOrFiles = Thread.currentThread().getContextClassLoader().getResources(slashPath);
-        } catch (IOException e) {
-            logger.error("load class failed, path = {}", dotPath, e);
-        }
-        if (dirOrFiles == null) return; //加载文件或目录的路径出错
-
-        while (dirOrFiles.hasMoreElements()) {
-            URL dirOrFile = dirOrFiles.nextElement();
-            //文件类型， file or jar
-            String fileType = dirOrFile.getProtocol();
-
-            if ("file".equals(fileType)) {
-                String filePath = dirOrFile.getFile();
-                logger.info("nextElement={}",filePath);
-                File file = new File(filePath);
-
-                if (!file.exists()) {
-                    logger.warn("path: {}, file not exist", filePath);
-                    continue;
-                }
-                //目录
-                if (file.isDirectory()) {
-                    File[] files = file.listFiles(f -> f.isDirectory() || f.getName().endsWith(".class"));
-                    if (files == null) continue;
-
-                    for (File f : files) {
-                        String fileName = f.getName();
-                        if (f.isDirectory()) {
-                            logger.info("dirOrFiles={}", dirOrFiles);
-                            getClassesByPath(classes, dotPath + '.' + fileName);
-                        } else if (f.getName().endsWith(".class")) {
-                            //去掉 .class 结尾
-                            fileName = fileName.substring(0, fileName.length() - 6);
-                            Class<?> loadClass = loadClass(dotPath + '.' + fileName);
-                            if (loadClass != null) {
-                                boolean isExist = !classes.add(loadClass);
-                                if (isExist) logger.error("class重复存在, {}", loadClass);
-                            }
-                        }
-                    }
-                    continue;
-                }
-                //class文件
-                if (filePath.endsWith(".class")) {
-                    int index = filePath.lastIndexOf("/");
-                    //去掉 .class 结尾
-                    String fileName = filePath.substring(index == -1 ? 0 : index + 1, filePath.length() - 6);
-                    Class<?> loadClass = loadClass(fileName);
-                    if (loadClass != null) {
-                        boolean isExist = !classes.add(loadClass);
-                        if (isExist) logger.error("class重复存在 in class, {}", loadClass);
-                    }
-                }
-
-            } else if ("jar".equals(fileType)) {
-                JarFile jar = null;
-                try {
-                    jar = ((JarURLConnection) dirOrFile.openConnection())
-                            .getJarFile();
-                } catch (IOException e) {
-                    logger.warn("load classes failed... path -> {}", dotPath, e);
-                }
-
-                if (jar == null) continue;
-
-                Enumeration<JarEntry> itemsForJar = jar.entries();
-                while (itemsForJar.hasMoreElements()) {
-                    JarEntry jarEntry = itemsForJar.nextElement();
-
-                    /**
-                     * 一个jar可能包括META-INF等其他非class文件。
-                     *
-                     * 这里扫描的目录和文件都会展开
-                     * 即就是已经进行了递归到内层了
-                     * 而且如果是目录， 以 “/” 结尾 忽略
-                     * 如果是以 “.class” 结尾， 解析生成class
-                     *
-                     */
-                    String fileName = jarEntry.getName();
-
-                    //目录
-                    if (fileName.endsWith("/")) continue;
-
-                    if (fileName.charAt(0) == '/') {
-                        fileName = fileName.substring(1);
-                    }
-
-                    //jar中文件或目录的路径，不与需要解析的路径匹配
-                    if (!fileName.startsWith(slashPath)) continue;
-
-                    //class文件
-                    if (fileName.endsWith(".class") && !jarEntry.isDirectory()) {
-                        //去掉 .class 结尾
-                        String filePath = fileName.substring(0, fileName.length() - 6);
-                        Class<?> loadClass = loadClass(filePath.replace('/', '.'));
-                        if (loadClass != null) {
-                            boolean isExist = !classes.add(loadClass);
-                            if (isExist) logger.error("class重复存在 in jar, {}", loadClass);
-                        }
-                    }
-                }
-
-            } // fileType = jar
-
-        } //foreach dirOrFiles
     }
 
     /**

@@ -65,6 +65,12 @@
             <scope>test</scope>
         </dependency>
 
+        <dependency>
+            <groupId>com.dorkbox</groupId>
+            <artifactId>Annotations</artifactId>
+            <version>2.14</version>
+        </dependency>
+
     </dependencies>
 
     <build>

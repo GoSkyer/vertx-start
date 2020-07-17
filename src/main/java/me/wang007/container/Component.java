@@ -218,4 +218,15 @@ public class Component {
     public List<Component> getSuperComponents() {
         return superComponents;
     }
+
+    @Override
+    public String toString() {
+        return "Component{" +
+                "clazz=" + clazz +
+                ", annotations=" + annotations +
+                ", componentName='" + componentName + '\'' +
+                ", propertyFields=" + propertyFields +
+                ", superComponents=" + superComponents +
+                '}';
+    }
 }

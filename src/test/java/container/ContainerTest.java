@@ -20,10 +20,11 @@ public class ContainerTest {
 
     @Test
     public void containerTest() {
-
+        DefaultContainer.init("example");
         DefaultContainer container = DefaultContainer.get();
 
         List<Component> components = container.getComponentsByAnnotation(Deploy.class);
+        System.out.println(components);
         Assert.assertTrue(components.size() != 0);
     }
 
