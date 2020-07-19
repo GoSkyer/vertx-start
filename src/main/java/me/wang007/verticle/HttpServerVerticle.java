@@ -118,102 +118,104 @@ public class HttpServerVerticle extends AbstractVerticle implements VerticleConf
         Map<String, Router> sharedSubRouters = new HashMap<>(); //共享挂载子路由
         Map<String, List<Router>> notSharedSubRouters = new HashMap<>(); //不共享挂载子路由
 
-        Future<Void> voidFuture = Promise.promise().future()
-                .compose(v -> {
-                    try {
-                        before(mainRouter);
-                    } catch (Exception e) {
-                        logger.error("execute before failed.", e);
-                        return Future.failedFuture(e);
-                    }
-                    return Future.<Void>succeededFuture();
-                })
-                .compose(v -> {
-                    LocalMap<String, SharedReference<?>> map = vertx.sharedData().getLocalMap(Key_Vertx_Start);
+//        Future<Void> voidFuture = Promise.promise().future()
+//                .compose(v -> {
+        try {
+            before(mainRouter);
+        } catch (Exception e) {
+            logger.error("execute before failed.", e);
+//                        return Future.failedFuture(e);
+            throw e;
+        }
+//                    return Future.<Void>succeededFuture();
+//                })
+//                .compose(v -> {
+        LocalMap<String, SharedReference<?>> map = vertx.sharedData().getLocalMap(Key_Vertx_Start);
 
-                    List<Component> components = DefaultContainer.get().getComponentsByAnnotation(Route.class);
+        List<Component> components = DefaultContainer.get().getComponentsByAnnotation(Route.class);
 
-                    List<LoadRouterTuple> tuples = new ArrayList<>(components.size());
-                    for (Component c : components) {
-                        LoadRouter instance;
-                        try {
-                            instance = (LoadRouter) c.getClazz().newInstance();
-                        } catch (Exception e) {
-                            logger.error(c.getComponentName() + "newInstance failed", e);
-                            return Future.failedFuture(e);
-                        }
-                        tuples.add(new LoadRouterTuple(c, instance));
-                    }
+        List<LoadRouterTuple> tuples = new ArrayList<>(components.size());
+        for (Component c : components) {
+            LoadRouter instance;
+            try {
+                instance = (LoadRouter) c.getClazz().newInstance();
+            } catch (Exception e) {
+                logger.error(c.getComponentName() + "newInstance failed", e);
+//                            return Future.failedFuture(e);
+                throw new RuntimeException(e);
+            }
+            tuples.add(new LoadRouterTuple(c, instance));
+        }
 
-                    List<Future> futList = new ArrayList<>(tuples.size());
+//                    List<Future> futList = new ArrayList<>(tuples.size());
 
-                    tuples.stream().sorted((t1, t2) -> {
-                        int order1 = t1.instance.order();
-                        int order2 = t2.instance.order();
-                        return Integer.compare(order1, order2);
-                    }).forEach(tuple -> {
-                        Component component = tuple.component;
-                        LoadRouter loadRouter = tuple.instance;
-                        Route route = component.getAnnotation(Route.class);
-                        String mountPath = RouteUtils.checkPath(route.mountPath());
+        tuples.stream().sorted((t1, t2) -> {
+            int order1 = t1.instance.order();
+            int order2 = t2.instance.order();
+            return Integer.compare(order1, order2);
+        }).forEach(tuple -> {
+            Component component = tuple.component;
+            LoadRouter loadRouter = tuple.instance;
+            Route route = component.getAnnotation(Route.class);
+            String mountPath = RouteUtils.checkPath(route.mountPath());
 
-                        Router subRouter = null;
-                        if (!StringUtils.isEmpty(mountPath)) {   //需要挂载
-                            subRouter = sharedSubRouters.computeIfAbsent(mountPath, k -> {
-                                Router subRouter0 = Router.router(vertx);
-                                mainRouter.mountSubRouter(mountPath, subRouter0);
-                                return subRouter0;
-                            });
-
-                        }
-                        Router router = subRouter != null ? subRouter : mainRouter;
-                        loadRouter.init(router, vertx, this);
-
-
-                        Promise<Void> promise = Promise.promise();
-                        Future<Void> future = promise.future();
-                        futList.add(future);
-
-                        loadRouter.start(future);
-                    });
-                    return CompositeFuture.join(futList);
-                })
-                .compose(allAr -> {
-                    if (allAr.failed()) {
-                        logger.warn("HttpServerVerticle start failed.");
-                        return Future.failedFuture(new VertxException("LoadRouter lifeCycle hooks failed", allAr.cause()));
-                    }
-                    AddressAndPort info = addressAndPort();
-                    Promise<Void> listenF = Promise.promise();
-//                    Future<Void> listenF = promise.future();
-                    server = vertx.createHttpServer().requestHandler(request -> {
-                        boolean success;
-                        try {
-                            success = beforeAccept(request);
-                        } catch (Exception e) {
-                            logger.error("beforeAccept handle failed.", e);
-                            request.response().setStatusCode(500).setStatusMessage("server failed").end();
-                            return;
-                        }
-                        if (success) mainRouter.handle(request);
-                    }).listen(info.port, info.address, ar -> {
-                        if (ar.failed()) {
-                            logger.error("http server listen failed.", ar.cause());
-                            listenF.fail(ar.cause());
-                            return;
-                        }
-                        if (first) pathLog(mainRouter, sharedSubRouters, notSharedSubRouters);
-
-                        if (first) {
-                            long end = System.currentTimeMillis();
-                            logger.info("http server started successful. listen in {}. ", info.port);
-                            logger.info("http server deploy time: " + (end - start) + "ms");
-                        }
-                        listenF.complete();
-                    });
-                    return listenF.future();
+            Router subRouter = null;
+            if (!StringUtils.isEmpty(mountPath)) {   //需要挂载
+                subRouter = sharedSubRouters.computeIfAbsent(mountPath, k -> {
+                    Router subRouter0 = Router.router(vertx);
+                    mainRouter.mountSubRouter(mountPath, subRouter0);
+                    return subRouter0;
                 });
-        startPromise.handle(voidFuture);
+
+            }
+            Router router = subRouter != null ? subRouter : mainRouter;
+            loadRouter.init(router, vertx, this);
+
+
+            Promise<Void> promise = Promise.promise();
+            Future<Void> future = promise.future();
+//                        futList.add(future);
+
+            loadRouter.start(future);
+        });
+//                    return CompositeFuture.join(futList);
+//                })
+//                .compose(allAr -> {
+//                    if (allAr.failed()) {
+//                        logger.warn("HttpServerVerticle start failed.");
+//                        return Future.failedFuture(new VertxException("LoadRouter lifeCycle hooks failed", allAr.cause()));
+//                    }
+        AddressAndPort info = addressAndPort();
+//                    Promise<Void> listenF = Promise.promise();
+//                    Future<Void> listenF = promise.future();
+        server = vertx.createHttpServer().requestHandler(request -> {
+            boolean success;
+            try {
+                success = beforeAccept(request);
+            } catch (Exception e) {
+                logger.error("beforeAccept handle failed.", e);
+                request.response().setStatusCode(500).setStatusMessage("server failed").end();
+                return;
+            }
+            if (success) mainRouter.handle(request);
+        }).listen(info.port, info.address, ar -> {
+            if (ar.failed()) {
+                logger.error("http server listen failed.", ar.cause());
+//                            listenF.fail(ar.cause());
+                return;
+            }
+            if (first) pathLog(mainRouter, sharedSubRouters, notSharedSubRouters);
+
+            if (first) {
+                long end = System.currentTimeMillis();
+                logger.info("http server started successful. listen in {}. ", info.port);
+                logger.info("http server deploy time: " + (end - start) + "ms");
+            }
+//                        listenF.complete();
+        });
+//                    return listenF.future();
+//                });
+//        startPromise.handle(voidFuture);
 
 
     }
