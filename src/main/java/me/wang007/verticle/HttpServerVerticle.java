@@ -2,9 +2,9 @@ package me.wang007.verticle;
 
 import io.vertx.core.*;
 import io.vertx.core.http.HttpServer;
-import io.vertx.core.http.HttpServerRequest;
 import io.vertx.core.shareddata.LocalMap;
 import io.vertx.ext.web.Router;
+import io.vertx.ext.web.RoutingContext;
 import io.vertx.ext.web.handler.BodyHandler;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
@@ -30,7 +30,7 @@ import static me.wang007.constant.VertxBootConst.Key_Vertx_Start;
  * <p>
  * 覆盖{@link #before(Router)} 做一些部署全局router操作
  * <p>
- * 覆盖{@link #beforeAccept(HttpServerRequest)} 做接受请求前的前置操作， 区别于{@link #before(Router)}方法
+ * 覆盖{@link #beforeAccept(RoutingContext)} 做接受请求前的前置操作， 区别于{@link #before(Router)}方法
  * <p>
  * 覆盖{@link #options()} 提供部署的参数
  * <p>
@@ -102,7 +102,7 @@ public class HttpServerVerticle extends AbstractVerticle implements VerticleConf
      * @param request req
      * @return true: 继续做处理，  false：结束处理。
      */
-    protected boolean beforeAccept(HttpServerRequest request) {
+    protected boolean beforeAccept(RoutingContext request) {
         return true;
         //NOOP
     }
@@ -165,18 +165,21 @@ public class HttpServerVerticle extends AbstractVerticle implements VerticleConf
             loadRouter.start();
         });
         AddressAndPort info = addressAndPort();
+        mainRouter.route().handler(event -> {
+            boolean success;
+            try {
+                success = beforeAccept(event);
+            } catch (Exception e) {
+                logger.error("beforeAccept handle failed.", e);
+                event.response().setStatusCode(500).setStatusMessage("server failed").end();
+                return;
+            }
+            if (success) {
+                event.next();
+            }
+        });
         server = vertx.createHttpServer()
-                .requestHandler(request -> {
-                    boolean success;
-                    try {
-                        success = beforeAccept(request);
-                    } catch (Exception e) {
-                        logger.error("beforeAccept handle failed.", e);
-                        request.response().setStatusCode(500).setStatusMessage("server failed").end();
-                        return;
-                    }
-                    if (success) mainRouter.handle(request);
-                })
+                .requestHandler(mainRouter)
                 .listen(info.port, info.address, ar -> {
                     if (ar.failed()) {
                         logger.error("http server listen failed.", ar.cause());
