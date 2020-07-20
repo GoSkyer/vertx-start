@@ -24,10 +24,8 @@ public interface LoadRouter {
     /**
      * {@link LoadRouter}生命周期方法。
      *
-     * 当且仅当start方法成功完成， 调用入参中的{@link Future#complete()}
-     * @param future 回调通知future
      */
-    void start(Future<Void> future);
+    void start();
 
     /**
      *
