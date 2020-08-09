@@ -194,7 +194,6 @@ public class HttpServerVerticle extends AbstractVerticle implements VerticleConf
                     }
                 });
 
-
     }
 
     /**

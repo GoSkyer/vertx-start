@@ -151,6 +151,7 @@ public class DefaultContainer implements Container {
     private void start(String... basePaths) {
         if (started.compareAndSet(false, true)) {
             logger.info("container starting...");
+            logger.info("basePaths=" + Arrays.toString(basePaths));
             loadComponents(basePaths);
             logger.info("container started completely");
         }
